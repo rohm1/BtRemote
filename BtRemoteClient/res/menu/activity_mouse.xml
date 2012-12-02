@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <item android:id="@+id/mouse_abs"
+        android:title="@string/mouse_abs"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    
+    <item android:id="@+id/mouse_rel"
+        android:title="@string/mouse_rel"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    
+</menu>

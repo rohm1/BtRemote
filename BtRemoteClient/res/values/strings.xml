@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General -->
+    <string name="app_name">Bt Remote</string>
+    <string name="title_activity_start">Bt Remote</string>
+    <!-- Bluetooth -->
+    <string name="start_bluetooth">Start bluetooth</string>
+    <string name="select_bt">Select a device</string>
+    <string name="no_bt">Your devive don\'t have a bluetooth module.</string>
+    <string name="no_bt_started">Bluetooth not started. This application won\'t work!</string>
+    <string name="no_paired">No paired device found!</string>
+    <!-- Fragments -->
+    <string name="title_activity_bt_remote">BtRemoteActivity</string>
+    <string name="connecting_window">Connecting</string>
+    <string name="please_wait">Please wait..</string>
+    <string name="conenction_failed">Connection failed</string>
+    <string name="title_activity_mouse">Mouse</string>
+    <string name="title_activity_keyboard">Keyboard</string>
+    <!-- Settings -->
+    <string name="menu_settings">Settings</string>
+    <string name="mouse_abs">Absolute mouse</string>
+    <string name="mouse_rel">Relative mouse</string>
+
+</resources>
