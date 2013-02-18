@@ -3,71 +3,73 @@ package org.romainp.btclient.remote;
 import org.romainp.btclient.R;
 import org.romainp.btclient.bluetooth.BtService;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
+import android.os.Bundle;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
-import android.widget.Toast;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ToggleButton;
 
-public class BtRemoteActivity extends FragmentActivity implements ActionBar.TabListener {
-
-	/**
-	 * The serialization (saved instance state) Bundle key representing the
-	 * current tab position.
-	 */
-	protected static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+public class BtRemoteActivity extends Activity implements OnClickListener {
 	
-	protected ProgressDialog progressDialog;
-	protected Boolean connecting = false;
+	protected String[] remotes = {"Mouse", "Keyboard", "Presentation", "Media"};
+	protected String[] frames = {"MouseFrame", "KeyboardFrame", "PresentationFrame", "MediaFrame"};
+	protected MyFrame frame = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Bundle extras = getIntent().getExtras();
-		
 		// Set up bluetooth
-		this.progressDialog = ProgressDialog.show(BtRemoteActivity.this, getString(R.string.connecting_window), getString(R.string.please_wait));
-		Intent i = new Intent(BtService.CONNECT);
-		this.connecting = true;
-		i.putExtra("address", extras.getString("address"));
-		LocalBroadcastManager.getInstance(this).sendBroadcast(i);
-		
-        IntentFilter filter = new IntentFilter(BtService.CONNECTED);
+//        IntentFilter filter = new IntentFilter(BtService.CONNECTED);
+		IntentFilter filter = new IntentFilter();
         filter.addAction(BtService.CONNECTION_FAILED);
-        LocalBroadcastManager.getInstance(this).registerReceiver(this.btMessageReceiver, filter);
-
-        // Restore instance
+        LocalBroadcastManager.getInstance(this).registerReceiver(this.btMessageReceiver, filter); //ondestroy onpause onresume
+        
+        // Set up layout
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_bt_remote);
-
-		// Set up the action bar to show tabs.
-		final ActionBar actionBar = getActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-		// For each of the sections in the app, add a tab to the action bar.
-		actionBar.addTab(actionBar.newTab().setText(R.string.title_activity_mouse).setTabListener(this));
-		actionBar.addTab(actionBar.newTab().setText(R.string.title_activity_keyboard).setTabListener(this));
-	}
-
-	@Override
-	public void onRestoreInstanceState(Bundle savedInstanceState) {
-		// Restore the previously serialized current tab position.
-		if (savedInstanceState.containsKey(STATE_SELECTED_NAVIGATION_ITEM)) {
-			getActionBar().setSelectedNavigationItem(savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM));
+		
+		ToggleButton b;
+		for(String remote : this.remotes) {
+			b = new ToggleButton(this);
+			b.setTextOn(remote);
+			b.setTextOff(remote);
+			b.setTextColor(0xffffffff);
+			b.setBackgroundResource(R.drawable.button);
+			b.setOnClickListener(this);
+			((LinearLayout) this.findViewById(R.id.remoteBtns)).addView(b);
 		}
+		
+		// Set up Fragment
+		this.setupFragment("Mouse");
 	}
 
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		// Serialize the current tab position.
-		outState.putInt(STATE_SELECTED_NAVIGATION_ITEM, getActionBar().getSelectedNavigationIndex());
+	private void setupFragment(String remote) {
+		for(int i = 0 ; i < this.remotes.length ; i++) {
+			if(remote.equals(this.remotes[i])) {
+				if(this.frame == null || !this.frame.getClass().toString().equals("class org.romainp.btclient.remote." + this.frames[i])) {
+					((ToggleButton) ((LinearLayout) this.findViewById(R.id.remoteBtns)).getChildAt(i)).setChecked(true);
+					if(this.frame != null)
+						this.frame.stop();
+					try {
+						Class<?> _class = Class.forName("org.romainp.btclient.remote." + this.frames[i]);
+					    java.lang.reflect.Constructor<?> constructor = _class.getConstructor(new Class<?>[] {Class.forName("org.romainp.btclient.remote.BtRemoteActivity")});
+					    this.frame = (MyFrame) constructor.newInstance(new Object [] {BtRemoteActivity.this});
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			else
+				((ToggleButton) ((LinearLayout) this.findViewById(R.id.remoteBtns)).getChildAt(i)).setChecked(false);
+		}
+		
 	}
 
 	@Override
@@ -76,58 +78,75 @@ public class BtRemoteActivity extends FragmentActivity implements ActionBar.TabL
 		getMenuInflater().inflate(R.menu.activity_bt_remote, menu);
 		return true;
 	}
-
-	@Override
-	public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, show the tab contents in the
-		// container view.
-		Fragment fragment = null;
-		
-		switch(tab.getPosition()) {
-		case 0:
-			fragment = new MouseFragment();
-			break;
-		case 1:
-			fragment = new KeyboardFragment();
-			break;
-		default:
-			break;
-		}
-
-//		Bundle args = new Bundle();
-//		args.putSerializable("ma", new Activity());
-//		fragment.setArguments(args);
-		getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
-	}
-
-	@Override
-	public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-	}
-
-	@Override
-	public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-	}
 	
 	/**
-	 * BtService's broadcasts receiver
+	 * 
 	 */
+//	protected void setupLayout(int layout, int btn) {
+//		LinearLayout remoteViewport = (LinearLayout) findViewById(R.id.remoteViewport);
+//		remoteViewport.removeAllViews();
+//		remoteViewport.addView(LayoutInflater.from(getBaseContext()).inflate(layout, null));
+//		((Button) findViewById(btn)).setSelected(true);
+//	}
+//	
+//	public void launchMouse(View view) {
+//		this.startRemote(MouseActivity.class);
+//	}
+//	
+//	public void launchKeyboard(View view) {
+//		this.startRemote(KeyboardActivity.class);
+//	}
+//	
+//	protected void startRemote(Class c) {
+////		if(!this.crtActivity.equals(action)) {
+//			Intent i = new Intent(this, c);
+//			i.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+//			startActivity(i);
+//			finish();
+////		}
+//	}
+//	
+//	@Override
+//	public boolean onKeyDown(int keyCode, KeyEvent event) {
+//	    if (keyCode == KeyEvent.KEYCODE_BACK) {
+//	    	finish();
+//	        return true;
+//	    }
+//	    return super.onKeyDown(keyCode, event);
+//	}
+	
+	/**
+	 * BtService's broadcasts
+	 */
+	
+	protected void broadcastToService(String sendData) {
+		Intent i = new Intent(BtService.SEND_DATA);
+		i.putExtra("sendData", sendData);
+		LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+	}
+	
 	protected BroadcastReceiver btMessageReceiver = new BroadcastReceiver() {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	String action = intent.getAction();
-	    	if(action.equals(BtService.CONNECTED)) {
-	    		connecting = false;
-	    		BtRemoteActivity.this.progressDialog.dismiss();
-	    	}
-	    	else if(action.equals(BtService.CONNECTION_FAILED)) {
-	    		connecting = false;
-	    		BtRemoteActivity.this.progressDialog.dismiss();
-				Toast.makeText(BtRemoteActivity.this, getString(R.string.conenction_failed), Toast.LENGTH_SHORT).show();
-				try {
-					onBackPressed();
-				} catch(Exception e) {}
-	    	}
+//	    	String action = intent.getAction();
+//	    	if(action.equals(BtService.CONNECTED)) {
+//	    		connecting = false;
+//	    		BtRemoteActivity.this.progressDialog.dismiss();
+//	    	}
+//	    	else if(action.equals(BtService.CONNECTION_FAILED)) {
+//	    		connecting = false;
+//	    		BtRemoteActivity.this.progressDialog.dismiss();
+//				Toast.makeText(BtRemoteActivity.this, getString(R.string.conenction_failed), Toast.LENGTH_SHORT).show();
+//				try {
+//					onBackPressed();
+//				} catch(Exception e) {}
+//	    	}
 	    }
 	};
+
+	@Override
+	public void onClick(View v) {
+		this.setupFragment(((Button) v).getText().toString());
+	}
 
 }

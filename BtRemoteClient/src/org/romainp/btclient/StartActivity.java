@@ -8,6 +8,7 @@ import org.romainp.btclient.remote.BtRemoteActivity;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -24,11 +25,14 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class StartActivity extends Activity {
 
 	private ListView list;
+	protected ProgressDialog progressDialog;
+	protected Boolean connecting = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,17 +43,11 @@ public class StartActivity extends Activity {
 		filter.addAction(BtService.START_BLUETOOTH);
 		filter.addAction(BtService.NO_PAIRED);
 		filter.addAction(BtService.LIST_PAIRED);
+		filter.addAction(BtService.CONNECTED);
+		filter.addAction(BtService.CONNECTION_FAILED);
 		LocalBroadcastManager.getInstance(this).registerReceiver(this.btMessageReceiver, filter);
-
-		bindService(new Intent(this, BtService.class), new ServiceConnection() {
-			public void onServiceConnected(ComponentName className, IBinder binder) {
-				LocalBroadcastManager.getInstance(StartActivity.this).sendBroadcast(new Intent(BtService.INIT));
-			}
-
-			public void onServiceDisconnected(ComponentName className) {
-			}
-		},
-		Context.BIND_AUTO_CREATE);
+		
+		this.bindService(new Intent(this, BtService.class), this.conn, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -57,6 +55,21 @@ public class StartActivity extends Activity {
 		getMenuInflater().inflate(R.menu.activity_start, menu);
 		return true;
 	}
+	
+	@Override
+	public void onDestroy() {
+		this.unbindService(this.conn);
+		super.onDestroy();
+	}
+	
+	protected ServiceConnection conn = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className, IBinder binder) {
+			LocalBroadcastManager.getInstance(StartActivity.this).sendBroadcast(new Intent(BtService.INIT));
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+		}
+	};
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == BtService.REQUEST_ENABLE_BT) {
@@ -101,11 +114,28 @@ public class StartActivity extends Activity {
 					public void onItemClick(AdapterView<?> adv, View v, int position, long id) {
 						@SuppressWarnings("unchecked")
 						HashMap<String, String> map = (HashMap<String, String>) list.getItemAtPosition(position);
-						Intent remoteSelectorActivity = new Intent(StartActivity.this, BtRemoteActivity.class);
-						remoteSelectorActivity.putExtra("address", map.get("address"));
-						startActivity(remoteSelectorActivity);
+						
+						progressDialog = ProgressDialog.show(StartActivity.this, getString(R.string.connecting_window), getString(R.string.please_wait));
+						connecting = true;
+						
+						Intent i = new Intent(BtService.CONNECT);
+						i.putExtra("address", map.get("address"));
+						LocalBroadcastManager.getInstance(StartActivity.this).sendBroadcast(i);
 					}
 				});
+			}
+			else if(action.equals(BtService.CONNECTED)) {
+				connecting = false;
+				StartActivity.this.progressDialog.dismiss();
+				
+				Intent remoteSelectorActivity = new Intent(StartActivity.this, BtRemoteActivity.class);
+				startActivity(remoteSelectorActivity);
+			}
+			else if(action.equals(BtService.CONNECTION_FAILED)) {
+				connecting = false;
+				StartActivity.this.progressDialog.dismiss();
+				
+				Toast.makeText(StartActivity.this, getString(R.string.conenction_failed), Toast.LENGTH_SHORT).show();
 			}
 		}
 	};

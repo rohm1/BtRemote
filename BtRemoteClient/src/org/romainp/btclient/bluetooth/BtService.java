@@ -40,7 +40,6 @@ public class BtService extends Service {
 	 */
 	public static final String INIT = "org.romainp.btclient.bluetooth.BtService.INIT";
 	public static final String GET_PAIRED = "org.romainp.btclient.bluetooth.BtService.GET_PAIRED";
-	public static final String OPEN_SOCKET = "org.romainp.btclient.bluetooth.BtService.OPEN_SOCKET";
 	public static final String CONNECT = "org.romainp.btclient.bluetooth.BtService.CONNECT";
 	public static final String SEND_DATA = "org.romainp.btclient.bluetooth.BtService.SEND_DATA";
 
@@ -54,6 +53,7 @@ public class BtService extends Service {
 	public static final String LIST_PAIRED = "org.romainp.btclient.bluetooth.BtService.LIST_PAIRED";
 	public static final String CONNECTED = "org.romainp.btclient.bluetooth.BtService.CONNECTED";
 	public static final String CONNECTION_FAILED = "org.romainp.btclient.bluetooth.BtService.CONNECTION_FAILED";
+	public static final String CONNECTION_LOST = "org.romainp.btclient.bluetooth.BtService.CONNECTION_LOST";
 
 	/**
 	 * Life cycle
@@ -65,7 +65,6 @@ public class BtService extends Service {
 		// Register broadcasts from activities
 		IntentFilter filter = new IntentFilter(BtService.INIT);
         filter.addAction(BtService.GET_PAIRED);
-        filter.addAction(BtService.OPEN_SOCKET);
         filter.addAction(BtService.CONNECT);
         filter.addAction(BtService.SEND_DATA);
         LocalBroadcastManager.getInstance(this).registerReceiver(this.aMessageReceiver, filter);
@@ -85,6 +84,7 @@ public class BtService extends Service {
 	@Override
 	public void onDestroy() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(aMessageReceiver);
+		this.closeSocket();
 		
 		super.onDestroy();
 	}
@@ -111,23 +111,19 @@ public class BtService extends Service {
 	    	if(action.equals(BtService.INIT)) {
 	    		init();
 	    	}
-	    	else if(action.equals(BtService.GET_PAIRED)) {
+	    	if(action.equals(BtService.GET_PAIRED)) {
 	    		listPaired();
 	    	}
-	    	else if(action.equals(BtService.OPEN_SOCKET)) {
-	    		openSocket();
-	    	}
 	    	else if(action.equals(BtService.CONNECT)) {
-		    	if(bunble != null && bunble.containsKey("address")) {
-		    		if(!address.equals(bunble.getString("address"))) {
-		    			closeSocket();
-		    			address = bunble.getString("address");
-		    		}
+		    	if(bunble != null && bunble.getString("address") != null) {
+		    		address = bunble.getString("address");
+		    		connect();
 		    	}
-		    	connect();
+		    	else
+		    		sendLocalBroadcast(BtService.CONNECTED);
 	    	}
 	    	else if(action.equals(BtService.SEND_DATA)) {
-	    		if(bunble != null && bunble.containsKey("sendData"))
+	    		if(bunble != null && bunble.getString("sendData") != null)
 					sendData(bunble.getString("sendData"));
 	    	}
 	    }
@@ -170,62 +166,56 @@ public class BtService extends Service {
 		}
 	}
 	
-	protected void openSocket() {
-		try {
-			BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(this.address);
+	protected void connect() {
+		if(!this.connected) {
+			this.closeSocket();
 			try {
-				this.socket = device.createRfcommSocketToServiceRecord(UUID.fromString(this.serverUUID));
-	//			receiveStream = socket.getInputStream();
-				this.sendStream = this.socket.getOutputStream();
-			} catch (IOException e) {
+				BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(this.address);
+				try {
+					this.socket = device.createRfcommSocketToServiceRecord(UUID.fromString(this.serverUUID));
+					//			receiveStream = socket.getInputStream();
+					this.sendStream = this.socket.getOutputStream();
+
+						new Thread() {
+							@Override
+							public void run() {
+								try {
+									socket.connect();
+									connected = true;
+									sendLocalBroadcast(BtService.CONNECTED);
+								} catch (IOException e) {
+									sendLocalBroadcast(BtService.CONNECTION_FAILED);
+									e.printStackTrace();
+								}
+							}
+						}.start();
+
+				} catch (IOException e) {
+					sendLocalBroadcast(BtService.CONNECTION_FAILED);
+					e.printStackTrace();
+				}
+			} catch (IllegalArgumentException e) {
+				sendLocalBroadcast(BtService.CONNECTION_FAILED);
 				e.printStackTrace();
 			}
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
 		}
-	}
-
-	protected void connect() {
-		try {
-			this.sendStream.write("test".getBytes());
-			this.sendStream.flush();
+		else
 			this.sendLocalBroadcast(BtService.CONNECTED);
-		} catch(Exception e) {
-			if(!this.connected) {
-				this.openSocket();
-				
-				new Thread() {
-					@Override
-					public void run() {
-						try {
-							socket.connect();
-							connected = true;
-							sendLocalBroadcast(BtService.CONNECTED);
-						} catch (IOException e) {
-							sendLocalBroadcast(BtService.CONNECTION_FAILED);
-							e.printStackTrace();
-						}
-					}
-				}.start();
-			}
-			else
-				this.sendLocalBroadcast(BtService.CONNECTED);
-		}
 	}
 	
 	protected void closeSocket() {
 		try {
-			this.socket.close();
 			this.connected = false;
+			this.socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} catch (NullPointerException e) {}
 	}
 	
 	protected void conenctionLost() {
 		this.connected = false;
     	this.closeSocket();
-    	this.sendLocalBroadcast(BtService.CONNECTION_FAILED);
+    	this.sendLocalBroadcast(BtService.CONNECTION_LOST);
 	}
 	
 	class SendThread extends Thread {
@@ -241,10 +231,7 @@ public class BtService extends Service {
 				try {
 					sendStream.write(this.data.getBytes());
 					sendStream.flush();
-				} catch (IOException e) {
-					conenctionLost();
-					e.printStackTrace();
-				} catch(NullPointerException e) {
+				} catch (Exception e) {
 					conenctionLost();
 					e.printStackTrace();
 				}

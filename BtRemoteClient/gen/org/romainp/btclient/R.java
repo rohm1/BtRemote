@@ -11,38 +11,49 @@ public final class R {
     public static final class attr {
     }
     public static final class drawable {
-        public static final int ic_action_search=0x7f020000;
-        public static final int ic_launcher=0x7f020001;
+        public static final int border=0x7f020000;
+        public static final int btn_active=0x7f020001;
+        public static final int btn_inactive=0x7f020002;
+        public static final int button=0x7f020003;
+        public static final int ic_action_search=0x7f020004;
+        public static final int ic_launcher=0x7f020005;
     }
     public static final class id {
-        public static final int address=0x7f070009;
-        public static final int container=0x7f070000;
-        public static final int keyboard=0x7f070001;
-        public static final int keyboardBtn=0x7f070004;
-        public static final int listv=0x7f070006;
-        public static final int menu_settings=0x7f07000a;
-        public static final int mouseBtn=0x7f070003;
-        public static final int mouse_abs=0x7f07000b;
-        public static final int mouse_rel=0x7f07000c;
-        public static final int name=0x7f070008;
-        public static final int startBtn=0x7f070007;
-        public static final int trackpad=0x7f070002;
-        public static final int txtv=0x7f070005;
+        public static final int address=0x7f07000e;
+        public static final int fullscreenoffbtn=0x7f070009;
+        public static final int fullscreenonbtn=0x7f07000a;
+        public static final int keyboard=0x7f070005;
+        public static final int listv=0x7f070003;
+        public static final int menu_settings=0x7f07000f;
+        public static final int mouse_abs=0x7f070010;
+        public static final int mouse_rel=0x7f070011;
+        public static final int name=0x7f07000d;
+        public static final int nextbtn=0x7f07000b;
+        public static final int prevbtn=0x7f070008;
+        public static final int remoteBtns=0x7f070000;
+        public static final int remoteViewport=0x7f070001;
+        public static final int startBtn=0x7f070004;
+        public static final int timer=0x7f070007;
+        public static final int timerbtn=0x7f07000c;
+        public static final int trackpad=0x7f070006;
+        public static final int txtv=0x7f070002;
     }
     public static final class layout {
         public static final int activity_bt_remote=0x7f030000;
-        public static final int activity_keyboard=0x7f030001;
-        public static final int activity_mouse=0x7f030002;
-        public static final int activity_remote_selector=0x7f030003;
-        public static final int activity_start=0x7f030004;
+        public static final int activity_start=0x7f030001;
+        public static final int frame_keyboard=0x7f030002;
+        public static final int frame_mouse=0x7f030003;
+        public static final int frame_presentation=0x7f030004;
         public static final int list_devices=0x7f030005;
     }
     public static final class menu {
         public static final int activity_bt_remote=0x7f060000;
         public static final int activity_keyboard=0x7f060001;
-        public static final int activity_mouse=0x7f060002;
-        public static final int activity_remote_selector=0x7f060003;
-        public static final int activity_start=0x7f060004;
+        public static final int activity_keyboard_2=0x7f060002;
+        public static final int activity_mouse=0x7f060003;
+        public static final int activity_mouse_2=0x7f060004;
+        public static final int activity_remote_selector=0x7f060005;
+        public static final int activity_start=0x7f060006;
     }
     public static final class string {
         /**  General 
@@ -50,24 +61,28 @@ public final class R {
         public static final int app_name=0x7f040000;
         public static final int conenction_failed=0x7f04000a;
         public static final int connecting_window=0x7f040008;
+        public static final int fullscreenoff=0x7f04000f;
+        public static final int fullscreenon=0x7f040010;
         /**  Settings 
          */
-        public static final int menu_settings=0x7f04000d;
-        public static final int mouse_abs=0x7f04000e;
-        public static final int mouse_rel=0x7f04000f;
+        public static final int menu_settings=0x7f040011;
+        public static final int mouse_abs=0x7f040012;
+        public static final int mouse_rel=0x7f040013;
+        public static final int next=0x7f04000e;
         public static final int no_bt=0x7f040004;
         public static final int no_bt_started=0x7f040005;
         public static final int no_paired=0x7f040006;
         public static final int please_wait=0x7f040009;
+        public static final int prev=0x7f04000d;
         public static final int select_bt=0x7f040003;
+        public static final int start=0x7f04000b;
         /**  Bluetooth 
          */
         public static final int start_bluetooth=0x7f040002;
+        public static final int stop=0x7f04000c;
         /**  Fragments 
          */
         public static final int title_activity_bt_remote=0x7f040007;
-        public static final int title_activity_keyboard=0x7f04000c;
-        public static final int title_activity_mouse=0x7f04000b;
         public static final int title_activity_start=0x7f040001;
     }
     public static final class style {
