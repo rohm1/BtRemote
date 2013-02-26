@@ -15,8 +15,8 @@ import java.util.HashMap;
 
 import javax.microedition.io.*;
 
-import org.rohm1.btserver.BtCodes;
-
+import org.rohm1.btserver.ui.Pointer;
+import org.rohm1.btserver.ui.Screen;
 
 public class RFCOMMServer {
 
@@ -36,19 +36,18 @@ public class RFCOMMServer {
 		int W = (int) dim.getWidth();
 		int H = (int) dim.getHeight();
 		int prevX = 0, prevY = 0;
-		
+
 		Pointer jf = null;
 		Screen s = null;
-		
+
 		while(true) {
 			try {
-
 				service = (StreamConnectionNotifier) Connector.open("btspp://localhost:" + serverUUID + ";name=BtServerForBtRemote");
 
 				conn = service.acceptAndOpen();
 				is = conn.openInputStream();
 				os = conn.openOutputStream();
-				
+
 				robot = new Robot();
 
 				byte[] buffer;
@@ -78,7 +77,7 @@ public class RFCOMMServer {
 
 						y = (int) (((float)y/h)*H);
 						y = y < 0 ? 0 : (y > H ? H : y);
-						
+
 						if(params[0].equals(BtCodes.MOUSE_ABS))
 							robot.mouseMove(x, y);
 						else {
@@ -107,9 +106,9 @@ public class RFCOMMServer {
 					}
 					else if(params[0].equals(BtCodes.KEY)) {
 //					    robot.keyPress(KeyEvent.VK_ALT);
-					    
+
 //					    int ascii = Integer.parseInt(params[1]);
-//					    
+//
 //					    for(int i = params[1].length()-1; i >= 0; i--)  {
 //					        int numpad_kc = ascii / (int) (Math.pow(10, i)) % 10 + KeyEvent.VK_NUMPAD0;
 //					        System.out.println(numpad_kc+"");
@@ -128,14 +127,14 @@ public class RFCOMMServer {
 //			                robot.keyPress(code);
 //			                robot.keyRelease(code);
 //			            }
-					    
+
 					    int ascii = Integer.parseInt(params[1]);
-					    
+
 					    if ((ascii > 64 && ascii < 91) || (ascii > 96 && ascii < 123))
 					    	ascii -= 32;
 					    else if(codes.containsKey(ascii))
 					    	ascii = codes.get(ascii);
-					    
+
 					    robot.keyPress(ascii);
 		                robot.keyRelease(ascii);
 
@@ -182,19 +181,19 @@ public class RFCOMMServer {
 
 			}
 			catch ( Exception  e ) {}
-			
+
 			try {
 				conn.close();
 			} catch ( IOException  e ) {}
-			
+
 			try {
 				service.close();
 			} catch (IOException e) {}
-			
+
 			try {
 				Thread.currentThread().sleep(20);
 			} catch(InterruptedException ie){}
-			
+
 		}
 	}
 

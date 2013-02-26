@@ -56,6 +56,7 @@ public class BtRemoteActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onDestroy() {
 		this.frame.stop();
+		super.onDestroy();
 	}
 
 	private void setupFragment(String remote) {
