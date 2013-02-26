@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.romainp.btclient"
+    package="org.rohm1.btclient"
     android:versionCode="1"
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="4"
+        android:minSdkVersion="5"
         android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -17,7 +17,7 @@
         android:theme="@style/AppTheme" >
         
         <activity
-            android:name="org.romainp.btclient.StartActivity"
+            android:name="org.rohm1.btclient.StartActivity"
             android:label="@string/title_activity_start" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,13 +26,13 @@
         </activity>
         
          <activity
-            android:name="org.romainp.btclient.remote.BtRemoteActivity"
+            android:name="org.rohm1.btclient.remote.BtRemoteActivity"
             android:label="@string/title_activity_bt_remote"
             android:exported="false"
             android:screenOrientation="portrait" >
         </activity>
 
-        <service android:name="org.romainp.btclient.bluetooth.BtService" />
+        <service android:name="org.rohm1.btclient.bluetooth.BtService" />
        
     </application>
 
