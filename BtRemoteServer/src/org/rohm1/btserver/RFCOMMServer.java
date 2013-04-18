@@ -55,7 +55,7 @@ public class RFCOMMServer {
 
 			while(true) {
 				buffer = new byte[64];
-				bytes_read = is.read( buffer );
+				bytes_read = is.read(buffer);
 				received = new String(buffer, 0, bytes_read);
 				System.out.println("received: " + received);
 

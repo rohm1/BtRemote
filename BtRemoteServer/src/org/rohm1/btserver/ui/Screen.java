@@ -109,7 +109,7 @@ public class Screen {
 					} catch (Exception e) {}
 						
 					try {
-						Thread.sleep(150);
+						Thread.sleep(1000);
 					} catch (InterruptedException e) {}
 				}
 				
